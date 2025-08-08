@@ -17,7 +17,7 @@ $instance = new \FluentUpdater\FluentLicensing();
 $instance->register([
     'version'     => '1.0.0',
     'license_key' => 'your-license-key-here',
-    'item_id'     => 114,
+    'item_id'     => "product_id",
     'basename'    => plugin_basename(__FILE__),
     'api_url'     => 'https://your-api-domain.com/'
 ]);
@@ -51,8 +51,8 @@ Initializes the licensing system with the provided configuration. This method mu
 ```php
 $instance->register([
     'version'     => '1.0.0',
-    'license_key' => 'flpa3ce17926f2cb5c431691c318c9ea0e2',
-    'item_id'     => 114,
+    'license_key' => 'your-license-key-here',
+    'item_id'     => "product_id",
     'basename'    => plugin_basename(__FILE__),
     'api_url'     => 'https://fluentcart.test/'
 ]);
@@ -71,7 +71,7 @@ Activates a license key by sending an activation request to the licensing server
 
 **Example:**
 ```php
-$response = $instance->activate('flpa3ce17926f2cb5c431691c318c9ea0e2');
+$response = $instance->activate('your-license-key-here');
 
 if (is_wp_error($response)) {
     // Handle error
@@ -213,7 +213,7 @@ add_action('init', function () {
     $instance->register([
         'version'     => '1.0.0',
         'license_key' => 'your-license-key-here',
-        'item_id'     => 114,
+        'item_id'     => "product_id",
         'basename'    => plugin_basename(__FILE__),
         'api_url'     => 'https://your-api-domain.com/'
     ]);
