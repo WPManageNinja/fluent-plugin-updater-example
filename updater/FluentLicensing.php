@@ -61,7 +61,7 @@ class FluentLicensing
             return new \WP_Error('license_key_missing', 'License key is required for activation.');
         }
 
-        $response = $this->apiRequest('activate', [
+        $response = $this->apiRequest('activate_license', [
             'license_key' => $licenseKey,
         ]);
 
@@ -70,10 +70,11 @@ class FluentLicensing
         }
 
         $saveData = [
-            'license_key'  => $licenseKey,
-            'status'       => $response['status'] ?? 'valid',
-            'variation_id' => $response['variation_id'] ?? '',
-            'expires'      => $response['expiration_date'] ?? ''
+            'license_key'     => $licenseKey,
+            'status'          => $response['status'] ?? 'valid',
+            'variation_id'    => $response['variation_id'] ?? '',
+            'expires'         => $response['expiration_date'] ?? '',
+            'activation_hash' => $response['activation_hash'] ?? ''
         ];
 
         // Save the license data to the database.
@@ -106,7 +107,10 @@ class FluentLicensing
         }
 
         $remoteStatus = $this->apiRequest('check_license', [
-            'license_key' => $currentLicense['license_key'],
+            'license_key'     => $currentLicense['license_key'],
+            'activation_hash' => $currentLicense['activation_hash'],
+            'item_id'         => $this->config['item_id'],
+            'url'             => home_url()
         ]);
 
         if (is_wp_error($remoteStatus)) {
@@ -114,7 +118,7 @@ class FluentLicensing
         }
 
         $status = isset($remoteStatus['status']) ? $remoteStatus['status'] : 'unregistered';
-        $errorType = isset($remoteStatus['error_type']) ? $remoteStatus['error_type'] : 'unknown';
+        $errorType = isset($remoteStatus['error_type']) ? $remoteStatus['error_type'] : null;
 
         if (!empty($currentLicense['status'])) {
             $currentLicense['status'] = $status;
