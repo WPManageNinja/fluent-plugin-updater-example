@@ -65,7 +65,7 @@ Activates a license key by sending an activation request to the licensing server
 **Parameters:**
 - `$licenseKey` (string): The license key to activate
 
-**Returns:** 
+**Returns:**
 - Array with license data on success
 - WP_Error object on failure
 
@@ -240,7 +240,7 @@ The licensing system communicates with your API server using the following endpo
 All API requests include:
 - `item_id`: Product ID
 - `current_version`: Plugin version
-- `url`: Site URL
+- `site_url`: Site URL
 - `license_key`: License key (when applicable)
 
 

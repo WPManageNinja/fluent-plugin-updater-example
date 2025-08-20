@@ -110,7 +110,7 @@ class FluentLicensing
             'license_key'     => $currentLicense['license_key'],
             'activation_hash' => $currentLicense['activation_hash'],
             'item_id'         => $this->config['item_id'],
-            'url'             => home_url()
+            'site_url'             => home_url()
         ]);
 
         if (is_wp_error($remoteStatus)) {
@@ -158,7 +158,7 @@ class FluentLicensing
         $defaults = [
             'item_id'         => $this->config['item_id'],
             'current_version' => $this->config['version'],
-            'url'             => home_url(),
+            'site_url'        => home_url(),
         ];
 
         $payload = wp_parse_args($data, $defaults);

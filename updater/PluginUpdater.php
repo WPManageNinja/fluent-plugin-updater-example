@@ -187,7 +187,7 @@ class PluginUpdater
         $payload = [
             'item_id'          => $this->config['item_id'],
             'current_version'  => $this->config['version'],
-            'url'              => home_url(),
+            'site_url'         => home_url(),
             'platform_version' => get_bloginfo('version'),
             'server_version'   => phpversion(),
             'license_key'      => $this->config['license_key'],
