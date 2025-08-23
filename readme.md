@@ -1,25 +1,26 @@
 # Fluent Plugin Updater
 
-A WordPress plugin updater and licensing system that handles automatic updates and license management for premium plugins.
+A WordPress plugin updater and licensing system that handles automatic updates and license management for premium
+plugins.
 
 ## Installation
 
 1. Copy the `updater` folder to your plugin
 2. Include and initialize the licensing class:
+3. Change The Namespaces `FluentUpdater` with `YourPluginNameSpace` and paths as per your plugin structure
 
 ```php
-if (!class_exists('\FluentUpdater\FluentLicensing')) {
+if (!class_exists('\YOURNAMESPACE\FluentLicensing')) {
     require_once plugin_dir_path(__FILE__) . 'updater/FluentLicensing.php';
 }
 
-$instance = new \FluentUpdater\FluentLicensing();
+$instance = new \YOURNAMESPACE\FluentLicensing();
 
 $instance->register([
-    'version'     => '1.0.0',
-    'license_key' => 'your-license-key-here',
-    'item_id'     => "product_id",
-    'basename'    => plugin_basename(__FILE__),
-    'api_url'     => 'https://your-api-domain.com/'
+    'version'     => '1.0.0', // Current version of your plugin
+    'item_id'     => "product_id", // Product ID from FluentCart
+    'basename'    => plugin_basename(__FILE__), // Plugin basename (e.g., 'your-plugin/your-plugin.php')
+    'api_url'     => 'https://your-api-domain.com/' // Your WordPress URL where you have fluent-cart installed
 ]);
 ```
 
@@ -28,10 +29,11 @@ $instance->register([
 The `register()` method accepts the following configuration parameters:
 
 - `version` (required): Current version of your plugin
-- `license_key` (optional): License key for the plugin
-- `item_id` (required): Product ID from your licensing system
+- `license_key` (optional): License key for the plugin (If you want to manage license keys on your own way)
+- `item_id` (required): Product ID from FluentCart
 - `basename` (required): Plugin basename (e.g., 'your-plugin/your-plugin.php')
-- `api_url` (required): Your licensing API endpoint URL
+- `api_url` (required): Your licensing API endpoint URL. Normally your WordPress site URL where you have FluentCart
+  installed
 - `slug` (optional): Plugin slug (auto-generated from basename if not provided)
 - `settings_key` (optional): Custom settings key for storing license data
 - `license_key_callback` (optional): Callback function to retrieve license key
@@ -40,14 +42,17 @@ The `register()` method accepts the following configuration parameters:
 
 ### `register($config = [])`
 
-Initializes the licensing system with the provided configuration. This method must be called before using any other methods.
+Initializes the licensing system with the provided configuration. This method must be called before using any other
+methods.
 
 **Parameters:**
+
 - `$config` (array): Configuration array with licensing parameters
 
 **Returns:** Instance of FluentLicensing class
 
 **Example:**
+
 ```php
 $instance->register([
     'version'     => '1.0.0',
@@ -63,14 +68,19 @@ $instance->register([
 Activates a license key by sending an activation request to the licensing server.
 
 **Parameters:**
+
 - `$licenseKey` (string): The license key to activate
 
 **Returns:**
+
 - Array with license data on success
 - WP_Error object on failure
 
 **Example:**
+
 ```php
+
+$instance = \YOURNAMESPACE\FluentLicensing::getInstance();
 $response = $instance->activate('your-license-key-here');
 
 if (is_wp_error($response)) {
@@ -89,10 +99,12 @@ Deactivates the current license by sending a deactivation request to the licensi
 **Parameters:** None
 
 **Returns:**
+
 - Array with deactivation response on success
 - WP_Error object on failure
 
 **Example:**
+
 ```php
 $response = $instance->deactivate();
 
@@ -110,25 +122,49 @@ if (is_wp_error($response)) {
 Retrieves the current license status. Can fetch from local storage or remote server.
 
 **Parameters:**
+
 - `$remoteFetch` (boolean): Whether to fetch status from remote server (default: false)
 
 **Returns:**
+
 - Array with license status information
 - WP_Error object on failure
 
 **Example:**
+
 ```php
 // Get local status
 $localStatus = $instance->getStatus();
 
+// available properties:
+[
+      'license_key'     => $licenseKey,
+      'status'          => // valid / invalid / disabled / unregistered / error,
+      'variation_id'    => 123, // Price ID from FluentCart
+      'variation_title' => '5 Sites License', // Price title from FluentCart
+      'expires'         => '2026-12-31 23:24:50', // Expiration date in Y-m-d format or 'lifetime' for lifetime licenses
+      'activation_hash' => 'UNIQUE_HASH' // Activation hash if available
+]
+
 // Get remote status (checks with server)
 $remoteStatus = $instance->getStatus(true);
+
+// This will rerun all the values from $instance->getStatus() but with some additional properties:
+// 'is_expired' => 'yes' if expiring or expired otherwise empty
+// 'renewal_url' => 'https://your-site.com/renewal-link' //
+// 'error_type' => 'disabled' / 'key_mismatch' / 'validation_error' / 'invalid_license' / 'invalid_activation' / '' // Error type if any
+// 'message' => 'Error message if any' 
 
 if (is_wp_error($remoteStatus)) {
     echo 'Error: ' . $remoteStatus->get_error_message();
 } else {
-    echo 'License status: ' . $remoteStatus['status'];
+    echo 'License status: ' . $remoteStatus['status']; // valid / invalid / disabled / unregistered / error
     echo 'Expires: ' . $remoteStatus['expires'];
+    
+    echo 'Is Expiring / Expired: '. $remoteStatus['is_expired']; // yes if expiring or expired otherwise empty
+    echo 'Renewal URL: '. $remoteStatus['renewal_url']; // Renewal URL if available
+    echo 'Error Type: '. $remoteStatus['error_type']; // Error type if any possible values: disabled / key_mismatch / validation_error / invalid_license / invalid_activation / 
+    echo 'Error Message: '. $remoteStatus['message']; // Error message if any
 }
 ```
 
@@ -141,6 +177,7 @@ Retrieves the currently stored license key.
 **Returns:** String containing the current license key or empty string if not set
 
 **Example:**
+
 ```php
 $licenseKey = $instance->getCurrentLicenseKey();
 echo 'Current license key: ' . $licenseKey;
@@ -155,8 +192,9 @@ Gets the singleton instance of the FluentLicensing class.
 **Returns:** Instance of FluentLicensing class
 
 **Example:**
+
 ```php
-$instance = \FluentUpdater\FluentLicensing::getInstance();
+$instance = \YOURNAMESPACE\FluentLicensing::getInstance();
 ```
 
 ## License Status Values
@@ -165,12 +203,14 @@ The license status can have the following values:
 
 - `valid`: License is active and valid
 - `invalid`: License is invalid or expired
+- `disabled`: License is disabled due to refund or by admin
 - `unregistered`: No license is registered
 - `error`: An error occurred during status check
 
 ## Error Handling
 
-All methods that communicate with the licensing server may return a `WP_Error` object on failure. Always check for errors:
+All methods that communicate with the licensing server may return a `WP_Error` object on failure. Always check for
+errors:
 
 ```php
 $response = $instance->activate('your-license-key');
@@ -203,12 +243,10 @@ if (defined('YOUR_PLUGIN_PATH')) {
 }
 
 add_action('init', function () {
-    if (!class_exists('\FluentUpdater\FluentLicensing')) {
+    if (!class_exists('\YOURNAMESPACE\FluentLicensing')) {
         require_once plugin_dir_path(__FILE__) . 'updater/FluentLicensing.php';
     }
-
-    $instance = new \FluentUpdater\FluentLicensing();
-
+    $instance = new \YOURNAMESPACE\FluentLicensing();
     // Register the licensing system
     $instance->register([
         'version'     => '1.0.0',
@@ -217,11 +255,18 @@ add_action('init', function () {
         'basename'    => plugin_basename(__FILE__),
         'api_url'     => 'https://your-api-domain.com/'
     ]);
+    
+    // get instance from anywhere your plugin
+    
+    $instance = \YOURNAMESPACE\FluentLicensing::getInstance();
 
     // Example: Activate a license
     // $response = $instance->activate('your-license-key');
     
-    // Example: Check license status
+    // Example: Check license status from local DB
+    // $status = $instance->getStatus();
+    
+    // Example: Check license status from  remote server
     // $status = $instance->getStatus(true);
     
     // Example: Deactivate license
@@ -238,6 +283,7 @@ The licensing system communicates with your API server using the following endpo
 - `check_license`: Checks license status
 
 All API requests include:
+
 - `item_id`: Product ID
 - `current_version`: Plugin version
 - `site_url`: Site URL
