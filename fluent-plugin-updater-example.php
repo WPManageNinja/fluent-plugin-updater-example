@@ -42,6 +42,7 @@ add_action('init', function () {
             'plugin_name'     => 'Awesome Addon',
         ])
         ->addPage([
-            'type' => 'options'
+            'type'        => 'submenu',
+            'parent_slug' => 'tools.php'
         ]);
 });
