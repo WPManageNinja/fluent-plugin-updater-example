@@ -44,6 +44,17 @@ class FluentLicensing
         new PluginUpdater($config);
 
         self::$instance = $this; // Set the instance for future use.
+
+        return self::$instance;
+    }
+
+    public function getConfig($key)
+    {
+        if (isset($this->config[$key])) {
+            return $this->config[$key]; // Return the requested configuration value.
+        }
+
+        throw new \Exception("Configuration key '{$key}' does not exist.");
     }
 
     public static function getInstance()
@@ -61,7 +72,7 @@ class FluentLicensing
             return new \WP_Error('license_key_missing', 'License key is required for activation.');
         }
 
-        $response = $this->apiRequest('activate', [
+        $response = $this->apiRequest('activate_license', [
             'license_key' => $licenseKey,
         ]);
 
@@ -84,9 +95,13 @@ class FluentLicensing
 
     public function deactivate()
     {
-        return $this->apiRequest('deactivate_license', [
+        $deactivated = $this->apiRequest('deactivate_license', [
             'license_key' => $this->getCurrentLicenseKey()
         ]);
+
+        delete_option($this->settingsKey); // Remove the license data from the database.
+
+        return $deactivated;
     }
 
     public function getStatus($remoteFetch = false)
@@ -114,7 +129,7 @@ class FluentLicensing
         }
 
         $status = isset($remoteStatus['status']) ? $remoteStatus['status'] : 'unregistered';
-        $errorType = isset($remoteStatus['error_type']) ? $remoteStatus['error_type'] : 'unknown';
+        $errorType = isset($remoteStatus['error_type']) ? $remoteStatus['error_type'] : '';
 
         if (!empty($currentLicense['status'])) {
             $currentLicense['status'] = $status;
@@ -131,8 +146,12 @@ class FluentLicensing
             $currentLicense['status'] = 'error';
         }
 
+        $currentLicense['renew_url'] = isset($remoteStatus['renew_url']) ? $remoteStatus['renew_url'] : '';
+        $currentLicense['is_expired'] = isset($remoteStatus['is_expired']) ? $remoteStatus['is_expired'] : false;
+
         if ($errorType) {
-            return new \WP_Error($errorType, 'License check failed: ' . $remoteStatus['message'], $remoteStatus);
+            $currentLicense['error_type'] = $errorType;
+            $currentLicense['error_message'] = $remoteStatus['message'];
         }
 
         return $currentLicense;
@@ -154,7 +173,7 @@ class FluentLicensing
         $defaults = [
             'item_id'         => $this->config['item_id'],
             'current_version' => $this->config['version'],
-            'url'             => home_url(),
+            'site_url'        => home_url(),
         ];
 
         $payload = wp_parse_args($data, $defaults);
@@ -172,13 +191,18 @@ class FluentLicensing
 
         if (200 !== wp_remote_retrieve_response_code($response)) {
             $errorData = wp_remote_retrieve_body($response);
+            $message = 'API request failed with status code: ' . wp_remote_retrieve_response_code($response);
             if (!empty($errorData)) {
                 $decodedData = json_decode($errorData, true);
                 if ($decodedData) {
                     $errorData = $decodedData;
                 }
+
+                if (!empty($errorData['message'])) {
+                    $message = (string)$errorData['message'];
+                }
             }
-            return new \WP_Error('api_error', 'API request failed with status code: ' . wp_remote_retrieve_response_code($response), $errorData);
+            return new \WP_Error('api_error', $message, $errorData);
         }
 
         $responseData = json_decode(wp_remote_retrieve_body($response), true); // Return the decoded response body.
