@@ -81,10 +81,12 @@ class FluentLicensing
         }
 
         $saveData = [
-            'license_key'  => $licenseKey,
-            'status'       => $response['status'] ?? 'valid',
-            'variation_id' => $response['variation_id'] ?? '',
-            'expires'      => $response['expiration_date'] ?? ''
+            'license_key'     => $licenseKey,
+            'status'          => $response['status'] ?? 'valid',
+            'variation_id'    => $response['variation_id'] ?? '',
+            'variation_title' => $response['variation_title'] ?? '',
+            'expires'         => $response['expiration_date'] ?? '',
+            'activation_hash' => $response['activation_hash'] ?? ''
         ];
 
         // Save the license data to the database.
@@ -112,6 +114,7 @@ class FluentLicensing
                 'license_key'  => '',
                 'status'       => 'unregistered',
                 'variation_id' => '',
+                'variation_title' => '',
                 'expires'      => ''
             ];
         }
@@ -121,7 +124,10 @@ class FluentLicensing
         }
 
         $remoteStatus = $this->apiRequest('check_license', [
-            'license_key' => $currentLicense['license_key'],
+            'license_key'     => $currentLicense['license_key'],
+            'activation_hash' => $currentLicense['activation_hash'],
+            'item_id'         => $this->config['item_id'],
+            'site_url'             => home_url()
         ]);
 
         if (is_wp_error($remoteStatus)) {
@@ -139,6 +145,10 @@ class FluentLicensing
 
             if (!empty($remoteStatus['variation_id'])) {
                 $currentLicense['variation_id'] = sanitize_text_field($remoteStatus['variation_id']);
+            }
+
+            if (!empty($remoteStatus['variation_title'])) {
+                $currentLicense['variation_title'] = sanitize_text_field($remoteStatus['variation_title']);
             }
 
             update_option($this->settingsKey, $currentLicense, false); // Save the updated license status.

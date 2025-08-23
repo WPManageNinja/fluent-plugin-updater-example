@@ -18,7 +18,6 @@ if (defined('FLUENT_PLUGIN_UPDATER_EXAMPLE_PLUGIN_PATH')) {
 }
 
 add_action('init', function () {
-
     if (!class_exists('\FluentUpdater\FluentLicensing')) {
         require_once plugin_dir_path(__FILE__) . 'updater/FluentLicensing.php';
         require_once plugin_dir_path(__FILE__) . 'updater/LicenseSettings.php';
@@ -45,5 +44,4 @@ add_action('init', function () {
         ->addPage([
             'type' => 'options'
         ]);
-
 });
