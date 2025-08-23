@@ -9,12 +9,14 @@ plugins.
 2. Include and initialize the licensing class:
 3. Change The Namespaces `FluentUpdater` with `YourPluginNameSpace` and paths as per your plugin structure
 
+Please make sure you change the namespace `YourPluginNameSpace` to your plugin's namespace and update the paths accordingly.
+
 ```php
-if (!class_exists('\YOURNAMESPACE\FluentLicensing')) {
+if (!class_exists('\YourPluginNameSpace\FluentLicensing')) {
     require_once plugin_dir_path(__FILE__) . 'updater/FluentLicensing.php';
 }
 
-$instance = new \YOURNAMESPACE\FluentLicensing();
+$instance = new \YourPluginNameSpace\FluentLicensing();
 
 $instance->register([
     'version'     => '1.0.0', // Current version of your plugin
@@ -80,7 +82,7 @@ Activates a license key by sending an activation request to the licensing server
 
 ```php
 
-$instance = \YOURNAMESPACE\FluentLicensing::getInstance();
+$instance = \YourPluginNameSpace\FluentLicensing::getInstance();
 $response = $instance->activate('your-license-key-here');
 
 if (is_wp_error($response)) {
@@ -194,7 +196,7 @@ Gets the singleton instance of the FluentLicensing class.
 **Example:**
 
 ```php
-$instance = \YOURNAMESPACE\FluentLicensing::getInstance();
+$instance = \YourPluginNameSpace\FluentLicensing::getInstance();
 ```
 
 ## License Status Values
@@ -243,10 +245,10 @@ if (defined('YOUR_PLUGIN_PATH')) {
 }
 
 add_action('init', function () {
-    if (!class_exists('\YOURNAMESPACE\FluentLicensing')) {
+    if (!class_exists('\YourPluginNameSpace\FluentLicensing')) {
         require_once plugin_dir_path(__FILE__) . 'updater/FluentLicensing.php';
     }
-    $instance = new \YOURNAMESPACE\FluentLicensing();
+    $instance = new \YourPluginNameSpace\FluentLicensing();
     // Register the licensing system
     $instance->register([
         'version'     => '1.0.0',
@@ -258,7 +260,7 @@ add_action('init', function () {
     
     // get instance from anywhere your plugin
     
-    $instance = \YOURNAMESPACE\FluentLicensing::getInstance();
+    $instance = \YourPluginNameSpace\FluentLicensing::getInstance();
 
     // Example: Activate a license
     // $response = $instance->activate('your-license-key');
@@ -278,11 +280,16 @@ add_action('init', function () {
 
 The licensing system communicates with your API server using the following endpoints:
 
-- `activate_license`: Activates a license key
-- `deactivate_license`: Deactivates a license
-- `check_license`: Checks license status
+**URLS:**
 
-All API requests include:
+- Activate License: `https://your-fluentcart-shop.com/?fluent-cart=activate_license`
+- Deactivate License: `https://your-fluentcart-shop.com/?fluent-cart=deactivate_license`
+- Check Status: `https://your-fluentcart-shop.com/?fluent-cart=check_license`
+- License version: `https://your-fluentcart-shop.com/?fluent-cart=get_license_version`
+- License version with package download and info: `https://your-fluentcart-shop.com/?fluent-cart=get_license_version`
+
+
+You need to add the following parameters in the request body for each endpoint:
 
 - `item_id`: Product ID
 - `current_version`: Plugin version
@@ -291,3 +298,32 @@ All API requests include:
 
 
 
+## Built in Settings Page
+If you want to use the built-in settings page to manage license keys, you can enable it by adding the following line
+after registering the licensing system:
+
+```php
+
+require_once plugin_dir_path(__FILE__) . 'updater/LicensingSettings.php';
+
+$liecnseSettings = (new \YourPluginNameSpace\LicenseSettings())
+        ->register($licenseInstance) // pass the instance of FluentLicensing
+        ->setConfig([
+            'menu_title'      => 'Awesome License',
+            'title'           => 'License Settings',
+            'license_key'     => 'License Key',
+            'action_renderer' => 'your_plugin/plign_license_form', // optional, if you want to render content with your own with do_action('fluent_licenseing_render_{action_renderer}')
+            'purchase_url'    => 'https://yourstore.com/pricing?utm_source=plugin_updater&utm_medium=plugin_updater&utm_campaign=fluent_plugin_updater_example', // your product purchase URL
+            'account_url'     => 'https://yourstore.com/account', // Account URL where user can manage their license keys
+            'plugin_name'     => 'Awesome Addon', // Your plugin name
+        ]);
+
+// If you want to render the settings page in WordPress Admin Panel. Use this:
+$liecnseSettings->addPage([
+            'type' => 'options', // possible values: options / submenu / menu
+            'parent_slug' => 'tools.php' // if type is submenu then parent slug is required
+        ])
+
+// OR: If you want to render the license form in your own settings page's content, you can use the following action:
+do_action('fluent_licenseing_render_your_plugin/plign_license_form');
+```
