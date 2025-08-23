@@ -111,11 +111,11 @@ class FluentLicensing
         $currentLicense = get_option($this->settingsKey, []);
         if (!$currentLicense || !is_array($currentLicense) || empty($currentLicense['license_key'])) {
             $currentLicense = [
-                'license_key'  => '',
-                'status'       => 'unregistered',
-                'variation_id' => '',
+                'license_key'     => '',
+                'status'          => 'unregistered',
+                'variation_id'    => '',
                 'variation_title' => '',
-                'expires'      => ''
+                'expires'         => ''
             ];
         }
 
@@ -127,7 +127,7 @@ class FluentLicensing
             'license_key'     => $currentLicense['license_key'],
             'activation_hash' => $currentLicense['activation_hash'],
             'item_id'         => $this->config['item_id'],
-            'site_url'             => home_url()
+            'site_url'        => home_url()
         ]);
 
         if (is_wp_error($remoteStatus)) {
