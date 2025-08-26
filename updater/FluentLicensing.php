@@ -119,7 +119,7 @@ class FluentLicensing
             ];
         }
 
-        if (!$remoteFetch || empty($currentLicense['license_key'])) {
+        if (!$remoteFetch) {
             return $currentLicense; // Return the current license status without fetching from the API.
         }
 
