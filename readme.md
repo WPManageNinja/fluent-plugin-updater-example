@@ -1,7 +1,12 @@
-# Fluent Plugin Updater
+# Please use the latest version here:
+[https://github.com/fluent-cart/software-licensing-sdk](https://github.com/fluent-cart/software-licensing-sdk)
+
+## Fluent Plugin Updater
 
 A WordPress plugin updater and licensing system that handles automatic updates and license management for premium
 plugins.
+
+
 
 ## Installation
 
